@@ -16,6 +16,7 @@ if config.config_file_name is not None:
 
 from app.models.database import Base
 from app.models.user import User
+from app.models.ticket import Ticket
 
 target_metadata = Base.metadata
 
