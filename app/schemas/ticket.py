@@ -27,3 +27,6 @@ class TicketResponse(BaseModel):
 
 model_config = {
     "from_attributes": True,}
+
+class TicketAssign(BaseModel):
+    agent_id: UUID
