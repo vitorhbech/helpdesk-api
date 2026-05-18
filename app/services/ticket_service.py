@@ -50,9 +50,62 @@ def get_ticket(db: Session, ticket_id: UUID, current_user: User) -> Ticket:
     return ticket
 
 def update_ticket(db: Session, ticket_id: UUID, data: TicketUpdate, current_user: User) -> Ticket:
+
     ticket = get_ticket(db, ticket_id, current_user)
     
     update_data = data.model_dump(exclude_unset=True)
+    
+    if "status" in update_data:
+        current_status = str(ticket.status)
+        new_status = str(update_data["status"])
+        user_role = str(current_user.role)
+        
+        if current_status != new_status:
+            
+            if current_status == "closed":
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Closed tickets cannot be modified or reopened."
+                )
+            
+            if current_status == "open":
+                if new_status == "in_progress" and user_role in ["agent", "admin"]:
+                    pass  
+                elif new_status == "closed" and user_role == "admin":
+                    pass  
+                else:
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail=f"Transition from {current_status} to {new_status} not permitted for role '{user_role}'."
+                    )
+                    
+            elif current_status == "in_progress":
+                if new_status == "resolved" and user_role in ["agent", "admin"]:
+                    pass  
+                else:
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail=f"Transition from {current_status} to {new_status} not permitted for role '{user_role}'."
+                    )
+                    
+            elif current_status == "resolved":
+                if new_status == "closed" and user_role in ["customer", "agent", "admin"]:
+                    pass  
+                elif new_status == "open" and user_role in ["customer", "admin"]:
+                    pass  
+                else:
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail=f"Transition from {current_status} to {new_status} not permitted for role '{user_role}'."
+                    )
+            else:
+                # Caso caia em algum status não mapeado
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid ticket status workflow."
+                )
+
+    # Aplica as atualizações validadas no objeto do banco
     for key, value in update_data.items():
         setattr(ticket, key, value)
     
