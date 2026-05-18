@@ -4,6 +4,7 @@ from fastapi import HTTPException, status
 from app.models.ticket import Ticket
 from app.models.user import User
 from app.schemas.ticket import TicketCreate, TicketUpdate
+from typing import cast
 from uuid import UUID
 
 def get_tickets(db: Session, current_user: User) -> list[Ticket]:
@@ -30,10 +31,21 @@ def get_ticket(db: Session, ticket_id: UUID, current_user: User) -> Ticket:
     ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
-    
-    # Validação de acesso
-    if current_user.role == "customer" and ticket.created_by != current_user.id:
-        raise HTTPException(status_code=403, detail="Access denied")
+
+    ticket_creator_id = cast(UUID, ticket.created_by)
+    ticket_assignee_id = cast(UUID | None, ticket.assigned_to)
+    user_id = cast(UUID, current_user.id)
+
+
+    if current_user.role == "customer":
+        if ticket_creator_id != user_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+        
+    if current_user.role == "agent":
+        is_creator = ticket_creator_id == user_id
+        is_assignee = ticket_assignee_id == user_id
+        if not (is_creator or is_assignee):
+            raise HTTPException(status_code=403, detail="Access denied")
         
     return ticket
 
