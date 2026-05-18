@@ -6,6 +6,7 @@ from app.models.user import User
 from app.schemas.ticket import TicketCreate, TicketUpdate
 from typing import cast
 from uuid import UUID
+from typing import cast, Any
 
 def get_tickets(db: Session, current_user: User) -> list[Ticket]:
     if current_user.role == "admin":
@@ -108,6 +109,32 @@ def update_ticket(db: Session, ticket_id: UUID, data: TicketUpdate, current_user
     # Aplica as atualizações validadas no objeto do banco
     for key, value in update_data.items():
         setattr(ticket, key, value)
+    
+    db.commit()
+    db.refresh(ticket)
+    return ticket
+
+def assign_ticket(db: Session, ticket_id: UUID, agent_id: UUID, current_user: User) -> Ticket:
+    """Assign a ticket to a specific agent (Admin/Agent Only)."""
+
+    ticket = get_ticket(db, ticket_id, current_user)
+
+    target_user = db.query(User).filter(User.id == agent_id).first()
+
+    if not target_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Target user not found."
+        )
+    
+    if str(target_user.role) not in ["agent", "admin"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Tickets can only be assigned to users with 'agent' or 'admin' roles."
+        )
+    
+    setattr(ticket, "assigned_to", cast(Any, agent_id))
+
     
     db.commit()
     db.refresh(ticket)
