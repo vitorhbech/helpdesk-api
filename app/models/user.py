@@ -11,6 +11,6 @@ class User(Base):
     name = Column(String(100), nullable=False)
     email = Column(String(255), unique=True, nullable=False)
     password_hash: str = Column(String(255), nullable=False)
-    role = Column(String(20), nullable=False, default="customer")
+    role: str = Column(String(20), nullable=False, default="customer") # type: ignore
     created_at = Column(DateTime, default=datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
