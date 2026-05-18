@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Depends
 from app.api.routes import auth
 from app.api.deps import get_current_user
+from app.api.routes import auth, tickets
+
 
 app = FastAPI(
     title="Helpdesk API",
@@ -9,6 +11,7 @@ app = FastAPI(
 )
 
 app.include_router(auth.router)
+app.include_router(tickets.router)
 
 @app.get("/health")
 def health_check():
