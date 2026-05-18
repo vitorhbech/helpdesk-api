@@ -3,8 +3,9 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 
 from app.api.deps import get_db, require_roles
-from app.schemas.ticket import TicketCreate, TicketUpdate, TicketResponse
+from app.schemas.ticket import TicketCreate, TicketUpdate, TicketResponse, TicketAssign
 from app.services.ticket_service import (
+    assign_ticket,
     create_ticket, 
     get_tickets, 
     get_ticket,       
@@ -45,6 +46,16 @@ def update(
 ):
     return update_ticket(db, ticket_id, data, current_user)
 
+@router.patch("/{ticket_id}/assign", response_model=TicketResponse)
+def assign(
+    ticket_id: UUID,
+    data: TicketAssign,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_roles("admin", "agent"))
+):
+    """Securely assign a ticket to an agent (Admin/Agent Only)."""
+    return assign_ticket(db, ticket_id=ticket_id, agent_id=data.agent_id, current_user=current_user)
+
 #  Delete endpoint is currently disabled to prevent accidental data loss. It can be re-enabled in the future if needed.
 # @router.delete("/{ticket_id}", status_code=status.HTTP_204_NO_CONTENT)
 # def delete(
@@ -53,3 +64,4 @@ def update(
 #     current_user = Depends(require_roles("admin"))
 # ):
 #     delete_ticket(db, ticket_id, current_user)
+
