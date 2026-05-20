@@ -9,8 +9,8 @@ from app.models.database import Base
 from app.models.user import User
 from app.models.ticket import Ticket
 from app.core.security import hash_password
-import os from dotenv 
-import load_dotenv
+import os 
+from dotenv import load_dotenv
 
 # ---------------------------------------------------------------------------
 # Test database — uses a separate PostgreSQL DB so tests never touch production
