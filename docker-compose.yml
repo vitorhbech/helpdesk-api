@@ -26,6 +26,7 @@ services:
       - "8000:8000"
     volumes:        
       - .:/app
+      - /app/venv
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-helpdesk_db}
       SECRET_KEY: ${SECRET_KEY}

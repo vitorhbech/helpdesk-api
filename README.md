@@ -60,14 +60,13 @@ pip install -r requirements.txt
 
 ### 4. Set up environment variables
 
-Create a `.env` file in the root directory:
+Copy the example file and fill in your own values:
 
-```env
-DATABASE_URL=postgresql://your_user:your_password@localhost:5432/helpdesk_db
-SECRET_KEY=your_secret_key
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
+```bash
+cp .env.example .env
 ```
+
+Then open `.env` and update the values accordingly.
 
 ### 5. Run database migrations
 
@@ -95,7 +94,7 @@ Interactive docs (Swagger UI) at `http://localhost:8000/docs`.
 | POST | `/auth/login` | Login and get JWT token | No |
 | GET | `/tickets` | List all tickets | Yes |
 | POST | `/tickets` | Create a new ticket | Yes |
-| PATCH | `/tickets/{id}/status` | Update ticket status | Yes (admin) |
+| PATCH | `/tickets/{id}` | Update ticket status | Yes (admin) |
 | PATCH | `/tickets/{id}/assign` | Assign ticket to a user | Yes (admin) |
 
 > Full interactive documentation available at `/docs` after running the server.
