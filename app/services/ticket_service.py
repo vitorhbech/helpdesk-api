@@ -9,17 +9,23 @@ from uuid import UUID
 from typing import cast, Any
 
 def get_tickets(db: Session, current_user: User) -> list[Ticket]:
-    if current_user.role == "admin":
+    # Return tickets visible to the current user
+    if str(current_user.role) == "admin":
         return db.query(Ticket).all()
-    elif current_user.role == "agent":
+
+    user_id = cast(UUID, current_user.id)
+
+    if str(current_user.role) == "customer":
+        return db.query(Ticket).filter(Ticket.created_by == user_id).all()
+
+    if str(current_user.role) == "agent":
+        # Agents can see tickets they created or are assigned to
         return db.query(Ticket).filter(
-            or_(
-                Ticket.created_by == current_user.id, 
-                Ticket.assigned_to == current_user.id
-            )
+            or_(Ticket.created_by == user_id, Ticket.assigned_to == user_id)
         ).all()
-    else:
-        return db.query(Ticket).filter(Ticket.created_by == current_user.id).all()
+
+    # Fallback: no tickets
+    return []
 
 def create_ticket(db: Session, ticket: TicketCreate, current_user: User) -> Ticket:
     db_ticket = Ticket(**ticket.model_dump(), created_by=current_user.id)
@@ -117,7 +123,9 @@ def update_ticket(db: Session, ticket_id: UUID, data: TicketUpdate, current_user
 def assign_ticket(db: Session, ticket_id: UUID, agent_id: UUID, current_user: User) -> Ticket:
     """Assign a ticket to a specific agent (Admin/Agent Only)."""
 
-    ticket = get_ticket(db, ticket_id, current_user)
+    ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
 
     target_user = db.query(User).filter(User.id == agent_id).first()
 
