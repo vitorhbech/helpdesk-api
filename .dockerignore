@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Environment variables
+.env
+.envrc
+
+# Tests
+tests/
+pytest.ini
+.pytest_cache/
+test_results.txt
+
+# Version control
+.git/
+.gitignore
+
+# Editor
+.vscode/
+.idea/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Alembic (only versions are needed)
+alembic/README
+
+# Misc
+*.md
+pyrightconfig.json
+gerar_contexto.py
+documento_projeto.md

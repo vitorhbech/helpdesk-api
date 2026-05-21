@@ -3,18 +3,22 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-
 from app.main import app
 from app.api.deps import get_db
 from app.models.database import Base
 from app.models.user import User
 from app.models.ticket import Ticket
 from app.core.security import hash_password
+import os 
+from dotenv import load_dotenv
 
 # ---------------------------------------------------------------------------
 # Test database — uses a separate PostgreSQL DB so tests never touch production
 # ---------------------------------------------------------------------------
-TEST_DATABASE_URL = "postgresql://postgres:PSnonSqr%402301@localhost:5432/helpdesk_test"
+load_dotenv()
+
+_prod_url = os.getenv("DATABASE_URL", "")
+TEST_DATABASE_URL = _prod_url.rsplit("/", 1)[0] + "/helpdesk_test"
 
 engine = create_engine(TEST_DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

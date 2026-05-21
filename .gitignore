@@ -219,3 +219,7 @@ __marimo__/
 
 # Test outputs and reports
 test_results.txt
+
+# Scripts and context files
+gerar_contexto.py
+documento_projeto.md
