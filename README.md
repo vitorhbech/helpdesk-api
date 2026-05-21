@@ -94,8 +94,8 @@ Interactive docs (Swagger UI) at `http://localhost:8000/docs`.
 | POST | `/auth/login` | Login and get JWT token | No |
 | GET | `/tickets` | List all tickets | Yes |
 | POST | `/tickets` | Create a new ticket | Yes |
-| PATCH | `/tickets/{id}` | Update ticket status | Yes (admin) |
-| PATCH | `/tickets/{id}/assign` | Assign ticket to a user | Yes (admin) |
+| PATCH | `/tickets/{id}` | Update ticket status | Yes |
+| PATCH | `/tickets/{id}/assign` | Assign ticket to a user | Yes (admin/agent) |
 
 > Full interactive documentation available at `/docs` after running the server.
 
