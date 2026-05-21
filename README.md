@@ -1,17 +1,20 @@
 # Helpdesk API
+![Tests](https://github.com/vitorhbech/helpdesk-api/actions/workflows/tests.yml/badge.svg)
 
-A RESTful API for helpdesk ticket management, built with **FastAPI**, **PostgreSQL**, **SQLAlchemy**, and **Alembic**. Supports user authentication with JWT, role-based access control, and full ticket lifecycle management.
+A RESTful API for helpdesk ticket management, built with **FastAPI**, **PostgreSQL**, **SQLAlchemy**, and **Alembic**. Supports user authentication with JWT, role-based access control, and a full ticket lifecycle workflow.
 
 ---
 
 ## Features
 
 - **Authentication** — User registration and login with JWT tokens
-- **Role-based access control** — Separate permissions for admins and regular users
+- **Role-based access control** — Separate permissions for admin, agent, and customer roles
 - **Ticket management** — Create, update, and track support tickets
-- **Status updates** — Move tickets through their lifecycle (e.g., open → in progress → resolved)
-- **Ticket assignment** — Assign tickets to specific users/agents
+- **Status workflow** — Structured lifecycle: `open → in_progress → resolved → closed`
+- **Ticket assignment** — Assign tickets to specific agents
 - **Database migrations** — Schema versioning with Alembic
+- **Automated tests** — 31 tests covering auth, tickets, and user management
+- **Docker support** — Full containerized environment with Docker Compose
 
 ---
 
@@ -26,17 +29,73 @@ A RESTful API for helpdesk ticket management, built with **FastAPI**, **PostgreS
 | Validation | Pydantic v2 |
 | Auth | JWT (python-jose + passlib + bcrypt) |
 | Server | Uvicorn |
+| Containers | Docker + Docker Compose |
+| Tests | pytest + httpx |
 
 ---
 
-## Prerequisites
+## API Overview
 
+| Method | Endpoint | Description | Auth required |
+|---|---|---|---|
+| POST | `/auth/register` | Register a new user | No |
+| POST | `/auth/login` | Login and get JWT token | No |
+| GET | `/tickets` | List tickets | Yes |
+| POST | `/tickets` | Create a new ticket | Yes |
+| GET | `/tickets/{id}` | Get ticket details | Yes |
+| PATCH | `/tickets/{id}` | Update ticket status | Yes |
+| PATCH | `/tickets/{id}/assign` | Assign ticket to an agent | Yes (admin/agent) |
+| GET | `/users` | List all users | Yes (admin) |
+| PATCH | `/users/{id}/role` | Update a user's role | Yes (admin) |
+| GET | `/health` | Health check | No |
+
+> Full interactive documentation available at `http://localhost:8000/docs` after running the server.
+
+---
+
+## Running with Docker (recommended)
+
+### Prerequisites
+- [Docker Desktop](https://www.docker.com/products/docker-desktop)
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/vitorhbech/helpdesk-api.git
+cd helpdesk-api
+```
+
+### 2. Set up environment variables
+
+```bash
+cp .env.example .env
+```
+
+Then open `.env` and update the values accordingly.
+
+### 3. Start the containers
+
+```bash
+docker compose up --build
+```
+
+### 4. Run database migrations
+
+In a separate terminal:
+
+```bash
+docker compose exec api alembic upgrade head
+```
+
+The API will be available at `http://localhost:8000`.
+
+---
+
+## Running Locally
+
+### Prerequisites
 - Python 3.10+
 - PostgreSQL running locally
-
----
-
-## Getting Started
 
 ### 1. Clone the repository
 
@@ -60,8 +119,6 @@ pip install -r requirements.txt
 
 ### 4. Set up environment variables
 
-Copy the example file and fill in your own values:
-
 ```bash
 cp .env.example .env
 ```
@@ -82,22 +139,23 @@ uvicorn app.main:app --reload
 
 The API will be available at `http://localhost:8000`.
 
-Interactive docs (Swagger UI) at `http://localhost:8000/docs`.
-
 ---
 
-## API Overview
+## Running Tests
 
-| Method | Endpoint | Description | Auth required |
-|---|---|---|---|
-| POST | `/auth/register` | Register a new user | No |
-| POST | `/auth/login` | Login and get JWT token | No |
-| GET | `/tickets` | List all tickets | Yes |
-| POST | `/tickets` | Create a new ticket | Yes |
-| PATCH | `/tickets/{id}` | Update ticket status | Yes |
-| PATCH | `/tickets/{id}/assign` | Assign ticket to a user | Yes (admin/agent) |
+Create a dedicated test database:
 
-> Full interactive documentation available at `/docs` after running the server.
+```bash
+psql -U postgres -c "CREATE DATABASE helpdesk_test;"
+```
+
+Run the full test suite:
+
+```bash
+pytest -v
+```
+
+See [`tests/README.md`](tests/README.md) for full test documentation.
 
 ---
 
@@ -108,19 +166,21 @@ helpdesk-api/
 ├── app/
 │   ├── api/
 │   │   └── routes/      # API route handlers
-│   ├── core/            # Settings and configuration
+│   ├── core/            # Settings and security
 │   ├── models/          # SQLAlchemy models
 │   ├── schemas/         # Pydantic schemas
 │   └── services/        # Business logic layer
 ├── alembic/
 │   └── versions/        # Migration files
-├── tests/               # Test suite
+├── tests/               # Automated test suite
+├── Dockerfile
+├── docker-compose.yml
 ├── alembic.ini
 └── requirements.txt
 ```
 
 ---
 
-##                                                 License
+## License
 
 This project is for educational purposes.
