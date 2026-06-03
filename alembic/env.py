@@ -17,6 +17,7 @@ if config.config_file_name is not None:
 from app.models.database import Base
 from app.models.user import User
 from app.models.ticket import Ticket
+from app.models.comment import Comment
 
 target_metadata = Base.metadata
 
@@ -27,7 +28,13 @@ target_metadata = Base.metadata
 import os
 from dotenv import load_dotenv
 load_dotenv()
-config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL", ""))
+database_url = os.getenv("DATABASE_URL", "")
+
+if database_url:
+    database_url = database_url.replace("%", "%%")
+
+config.set_main_option("sqlalchemy.url", database_url)
+
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
